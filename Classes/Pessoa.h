@@ -9,25 +9,26 @@ private:
     bool dentroElevador;
 
 public:
-    Pessoa(int id, int atual, int destino) {
-        this->id = id;
-        andarAtual = atual;
-        andarDestino = destino;
-        dentroElevador = false;
-    }
+    // Cria pessoa
+    Pessoa(int id, int atual, int destino);
 
-    int getId() { return id; }
-    int getAndarAtual() { return andarAtual; }
-    int getAndarDestino() { return andarDestino; }
+    // Retorna id
+    int getId();
 
-    void entrarElevador() {
-        dentroElevador = true;
-    }
+    // Retorna andar atual
+    int getAndarAtual();
 
-    void sairElevador() {
-        dentroElevador = false;
-        andarAtual = andarDestino;
-    }
+    // Retorna destino
+    int getAndarDestino();
+
+    // Marca entrada
+    void entrarElevador();
+
+    // Marca saída
+    void sairElevador();
+
+    // Verifica elevador
+    bool estaNoElevador();
 };
 
 #endif

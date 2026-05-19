@@ -2,32 +2,37 @@
 #define ANDAR_H
 
 #include <vector>
+
 #include "Pessoa.h"
 
 using namespace std;
 
 class Andar {
+
 private:
+
+    // Numero do andar
     int numero;
-    vector<Pessoa> fila;
+
+    // Pessoas esperando
+    vector<Pessoa> pessoas;
 
 public:
-    Andar(int numero) {
-        this->numero = numero;
-    }
 
-    int getNumero() {
-        return numero;
-    }
+    // Construtor
+    Andar(int numero);
 
-    void adicionarPessoa(Pessoa p) {
-        fila.push_back(p);
-    }
+    // Adiciona pessoa
+    void adicionarPessoa(Pessoa pessoa);
 
-    int quantidadePessoas() {
-        return fila.size();
-    }
+    // Retorna pessoas
+    vector<Pessoa>& getPessoas();
 
+    // Verifica vazio
+    bool vazio();
+
+    // Remove pessoa
+    Pessoa removerPessoa();
 };
 
 #endif

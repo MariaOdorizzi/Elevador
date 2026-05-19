@@ -2,48 +2,88 @@
 #define ELEVADOR_H
 
 #include <vector>
+#include <string>
+
 #include "Pessoa.h"
+#include "Andar.h"
 
 using namespace std;
 
+// Estados do elevador
+enum EstadoElevador {
+    PARADO,
+    SUBINDO,
+    DESCENDO
+};
+
 class Elevador {
+
 private:
+
+    // Identificador
     int id;
+
+    // Andar atual
     int andarAtual;
+
+    // Estado atual
+    EstadoElevador estado;
+
+    // Capacidade maxima
     int capacidade;
+
+    // Pessoas dentro
     vector<Pessoa> pessoas;
 
+    // Lista de chamadas
+    vector<int> chamadas;
+
 public:
-    Elevador(int id) {
-        this->id = id;
-        andarAtual = 0;
-        capacidade = 5;
-    }
 
-    int getAndarAtual() {
-        return andarAtual;
-    }
+    // Construtor
+    Elevador(int capacidade);
 
-    void subir() {
-        andarAtual++;
-    }
+    // Retorna andar atual
+    int getAndarAtual();
 
-    void descer() {
-        andarAtual--;
-    }
+    // Define andar atual
+    void setAndarAtual(int andar);
 
-    void entrarPessoa(Pessoa p) {
-        if (pessoas.size() < capacidade) {
-            pessoas.push_back(p);
-        }
-    }
+    // Move elevador
+    void mover();
 
-    void status() {
-        cout << "Elevador " << id << " no andar " << andarAtual << endl;
-        cout << "Pessoas dentro: " << pessoas.size() << endl;
-    }
+    // Embarca pessoas
+    void embarcar(Andar &andar);
 
-    // TODO: remover pessoas no andar correto
+    // Desembarca pessoas
+    void desembarcar();
+
+    // Verifica vazio
+    bool vazio();
+
+    // Adiciona chamada
+    void adicionarChamada(int andar);
+
+    // Executa FIFO
+    void executarFIFO();
+
+    // Executa SCAN
+    void executarSCAN();
+
+    // Executa menor distancia
+    void executarMenorDistancia();
+
+    // Mostra cabecalho
+    void mostrarCabecalho(string algoritmo);
+
+    // Mostra movimento
+    void mostrarMovimento(
+        int origem,
+        int destino
+    );
+
+    // Retorna estado em texto
+    string getEstadoTexto();
 };
 
 #endif

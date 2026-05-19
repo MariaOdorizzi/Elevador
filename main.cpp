@@ -1,38 +1,149 @@
 #include <iostream>
 #include <vector>
 
-#include "classes/Pessoa.h"
-#include "classes/Elevador.h"
-#include "classes/Andar.h"
-#include "classes/Predio.h"
 
 using namespace std;
 
-int main() {
+// Imprime lista
+void imprimirLista(
+    vector<int> lista
+) {
 
-    vector<Andar> andares;
-    for (int i = 0; i < 10; i++) {
-        andares.push_back(Andar(i));
+    for(int valor : lista) {
+
+        cout << valor << " ";
+    }
+}
+
+// Imprime linha elevador
+void imprimirLinha(
+    int andar,
+    int posicao
+) {
+
+    if(andar == posicao) {
+
+        cout << "[" << andar << "] | E |";
+
+    } else {
+
+        cout << "[" << andar << "] |   |";
+    }
+}
+
+// Mostra comparacao
+void mostrarComparacao(
+
+    vector<int> fifo,
+    vector<int> scan,
+    vector<int> menor,
+
+    int posFIFO,
+    int posSCAN,
+    int posMenor
+) {
+
+    cout << endl;
+
+    cout << "================================================================================"
+         << endl;
+
+    cout << "FIFO                    "
+         << "SCAN                    "
+         << "MENOR DISTANCIA"
+         << endl;
+
+    cout << "================================================================================"
+         << endl;
+
+    cout << endl;
+
+    // Estados
+    cout << "Estado: SUBINDO         ";
+    cout << "Estado: SUBINDO         ";
+    cout << "Estado: SUBINDO         ";
+    cout << endl;
+
+    cout << endl;
+
+    // Chamadas
+    cout << "Chamadas:               ";
+    cout << "Chamadas:               ";
+    cout << "Chamadas:";
+    cout << endl;
+
+    imprimirLista(fifo);
+
+    cout << "            ";
+
+    imprimirLista(scan);
+
+    cout << "            ";
+
+    imprimirLista(menor);
+
+    cout << endl << endl;
+
+    // Desenha predio
+    for(int andar = 8; andar >= 0; andar--) {
+
+        imprimirLinha(
+            andar,
+            posFIFO
+        );
+
+        cout << "      ";
+        cout << "      ";
+
+        imprimirLinha(
+            andar,
+            posSCAN
+        );
+
+        cout << "      ";
+        cout << "      ";
+
+        imprimirLinha(
+            andar,
+            posMenor
+        );
+
+        cout << endl;
     }
 
-    Pessoa p1(1, 0, 5);
-    Pessoa p2(2, 2, 8);
-    Pessoa p3(3, 3, 1);
+    cout << "================================================================================"
+         << endl;
+}
 
-    andares[0].adicionarPessoa(p1);
-    andares[2].adicionarPessoa(p2);
-    andares[3].adicionarPessoa(p3);
+int main() {
 
-    vector<Elevador> elevadores;
-    elevadores.push_back(Elevador(1));
-    elevadores.push_back(Elevador(2));
+    // FIFO
+    vector<int> fifo = {4, 1, 6, 2, 8};
 
-    elevadores[0].subir();
-    elevadores[0].subir();
+    // SCAN
+    vector<int> scan = {1, 2, 4, 6, 8};
 
-    elevadores[0].status();
+    // MENOR DISTANCIA
+    vector<int> menor = {1, 2, 4, 6, 8};
 
-    cout << "Andar 0 tem " << andares[0].quantidadePessoas() << " pessoas na fila" << endl;
+    // Posicoes atuais
+    int posFIFO = 6;
+
+    int posSCAN = 2;
+
+    int posMenor = 8;
+
+    // Exibe comparacao
+    mostrarComparacao(
+
+        fifo,
+        scan,
+        menor,
+
+        posFIFO,
+        posSCAN,
+        posMenor
+    );
 
     return 0;
 }

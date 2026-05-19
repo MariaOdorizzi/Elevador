@@ -1,44 +1,73 @@
-#include "Predio.h"
+#include "Classes/Predio.h"
+
 #include <iostream>
 
-void moverElevador(Elevador &elevador, int destino) {
+using namespace std;
 
-    if (elevador.getAndarAtual() < destino) {
-        std::cout << "Elevador vai subir\n";
-        while (elevador.getAndarAtual() < destino) {
-            elevador.subir();
-        }
-    } else if (elevador.getAndarAtual() > destino) {
-        std::cout << "Elevador vai descer\n";
-        while (elevador.getAndarAtual() > destino) {
-            elevador.descer();
-        }
-    } else {
-        std::cout << "Elevador ja esta no andar " << destino << "\n";
+// Inicializa predio
+Predio::Predio(
+    int quantidadeAndares
+)
+: elevador(5)
+{
+
+    // Cria andares
+    for(
+        int i = 0;
+        i < quantidadeAndares;
+        i++
+    ) {
+
+        andares.push_back(
+            Andar(i)
+        );
     }
 }
 
-Predio::Predio(int andares) {
-    totalAndares = andares;
+// Adiciona pessoa
+void Predio::adicionarPessoa(
+    Pessoa pessoa
+) {
+
+    int andar =
+        pessoa.getAndarAtual();
+
+    andares[andar]
+        .adicionarPessoa(pessoa);
+
+    // Adiciona chamada
+    elevador.adicionarChamada(
+        andar
+    );
+
+    cout
+        << "Pessoa "
+        << pessoa.getId()
+        << " chamou no andar "
+        << andar
+        << endl;
 }
 
-void Predio::iniciarSimulacao() {
+// Simula sistema
+void Predio::simular() {
 
-    std::cout << "Simulacao iniciada!\n";
+    cout << endl;
 
-    Pessoa p1(1, 0, 5);
+    cout << "===================="
+         << endl;
 
-    p1.chamarElevador();
+    cout << "SIMULADOR"
+         << endl;
 
-    // elevador vai até a pessoa
-    moverElevador(elevador, p1.getAndarAtual());
+    cout << "===================="
+         << endl;
 
-    p1.entrarElevador();
+    // Executa FIFO
+    elevador.executarFIFO();
 
-    // elevador leva até o destino
-    moverElevador(elevador, p1.getDestino());
+    // Executa SCAN
+    elevador.executarSCAN();
 
-    p1.sairElevador();
-
-    std::cout << "Simulacao finalizada!\n";
+    // Executa menor distancia
+    elevador.executarMenorDistancia();
 }

@@ -1,35 +1,39 @@
-#include "Pessoa.h"
-#include <iostream>
+#include "Classes/Pessoa.h"
 
+// Inicializa atributos
 Pessoa::Pessoa(int id, int atual, int destino) {
     this->id = id;
-    andarAtual = atual;
-    andarDestino = destino;
-    dentroElevador = false;
+    this->andarAtual = atual;
+    this->andarDestino = destino;
+    this->dentroElevador = false;
 }
 
+// Retorna id
+int Pessoa::getId() {
+    return id;
+}
+
+// Retorna andar atual
 int Pessoa::getAndarAtual() {
     return andarAtual;
 }
 
-int Pessoa::getDestino() {
+// Retorna destino
+int Pessoa::getAndarDestino() {
     return andarDestino;
 }
 
-bool Pessoa::estaNoElevador() {
-    return dentroElevador;
-}
-
-void Pessoa::chamarElevador() {
-    std::cout << "Pessoa " << id << " chamou o elevador no andar " << andarAtual << "\n";
-}
-
+// Pessoa entra no elevador
 void Pessoa::entrarElevador() {
     dentroElevador = true;
-    std::cout << "Pessoa " << id << " entrou no elevador\n";
 }
 
+// Pessoa sai do elevador
 void Pessoa::sairElevador() {
     dentroElevador = false;
-    std::cout << "Pessoa " << id << " saiu no andar " << andarDestino << "\n";
+}
+
+// Verifica presença no elevador
+bool Pessoa::estaNoElevador() {
+    return dentroElevador;
 }

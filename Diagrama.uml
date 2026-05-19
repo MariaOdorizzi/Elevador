@@ -4,46 +4,46 @@ class Pessoa {
     - id : int
     - andarAtual : int
     - andarDestino : int
-    - dentroElevador : boolean
 
-    + chamarElevador()
-    + entrarElevador()
-    + sairElevador()
+    + Pessoa(id : int, atual : int, destino : int)
+    + getId() : int
+    + getAndarAtual() : int
+    + getAndarDestino() : int
+}
+
+class Andar {
+    - numero : int
+
+    + Andar(num : int)
+    + getNumero() : int
 }
 
 class Elevador {
     - andarAtual : int
-    - capacidadeMaxima : int
-    - pessoasDentro : List<Pessoa>
-    - filaDestinos : List<int>
-    - direcao : String
+    - fila : queue<int>
 
-    + mover()
-    + abrirPorta()
-    + fecharPorta()
-    + adicionarDestino(andar : int)
+    + Elevador()
+    + chamar(andar : int) : void
+    + processar() : void
+    + mostrarFila() : void
+    + getAndarAtual() : int
 }
 
 class Predio {
-    - numeroAndares : int
     - elevador : Elevador
-    - pessoas : List<Pessoa>
+    - pessoas : vector<Pessoa>
+    - andares : vector<Andar>
 
-    + adicionarPessoa(p : Pessoa)
-    + simularTurno()
-}
-
-class Simulador {
-    - predio : Predio
-
-    + iniciarSimulacao()
-    + gerarPessoaAleatoria()
-    + executar()
+    + Predio()
+    + adicionarPessoa(p : Pessoa) : void
+    + iniciarChamadas() : void
+    + simular(tempoMax : int) : void
+    + mostrarPessoas() : void
 }
 
 Predio "1" *-- "1" Elevador
+Predio "1" *-- "0..7" Andar
 Predio "1" *-- "many" Pessoa
-Elevador "1" --> "many" Pessoa
-Simulador --> Predio
+Elevador "1" -- "many" Pessoa : atende >
 
 @enduml
