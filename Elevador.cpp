@@ -14,6 +14,8 @@ Elevador::Elevador(int capacidade) {
     andarAtual = 0;
 
     estado = PARADO;
+
+    estrategia = nullptr;
 }
 
 // Retorna andar atual
@@ -26,6 +28,14 @@ int Elevador::getAndarAtual() {
 void Elevador::setAndarAtual(int andar) {
 
     andarAtual = andar;
+}
+
+// Define estrategia
+void Elevador::setEstrategia(
+    EstrategiaElevador* estrategia
+) {
+
+    this->estrategia = estrategia;
 }
 
 // Move elevador
@@ -137,7 +147,6 @@ void Elevador::mostrarMovimento(
     // Desenha predio
     for(int i = 8; i >= 0; i--) {
 
-        // Mostra elevador
         if(i == destino) {
 
             cout << "["
@@ -155,65 +164,119 @@ void Elevador::mostrarMovimento(
     }
 }
 
-// Executa FIFO: First In, First Out - Primeiro que entra, primeiro que sai
+// Executa FIFO
 void Elevador::executarFIFO() {
 
     mostrarCabecalho("FIFO");
 
-    // Percorre chamadas
     for(int andar : chamadas) {
 
         int origem = andarAtual;
 
-        // Atualiza estado
         if(andar > andarAtual)
             estado = SUBINDO;
-        else
+        else if(andar < andarAtual)
             estado = DESCENDO;
+        else
+            estado = PARADO;
 
-        // Move elevador
         andarAtual = andar;
 
-        // Mostra resultado
         mostrarMovimento(
             origem,
             andarAtual
         );
     }
+
+    cout << endl;
+
+    cout << "Movimentos: "
+         << calcularMovimentos(
+                chamadas
+            )
+         << endl;
 
     estado = PARADO;
 }
 
-// Executa SCAN: Atende por direção; varrer, examinar ou percorrer procurando algo.
+// Executa SCAN
 void Elevador::executarSCAN() {
 
     mostrarCabecalho("SCAN");
 
-    // Copia fila
-    vector<int> fila = chamadas;
+    vector<int> acima;
+    vector<int> abaixo;
 
-    // Ordena fila
+    for(int chamada : chamadas) {
+
+        if(chamada >= andarAtual)
+            acima.push_back(chamada);
+        else
+            abaixo.push_back(chamada);
+    }
+
     sort(
-        fila.begin(),
-        fila.end()
+        acima.begin(),
+        acima.end()
     );
 
-    // Percorre fila
-    for(int andar : fila) {
+    sort(
+        abaixo.begin(),
+        abaixo.end(),
+        greater<int>()
+    );
+
+    vector<int> ordem;
+
+    for(int andar : acima) {
 
         int origem = andarAtual;
 
-        estado = SUBINDO;
+        if(andar > andarAtual)
+            estado = SUBINDO;
+        else
+            estado = PARADO;
 
-        // Atualiza andar
         andarAtual = andar;
 
-        // Mostra resultado
+        ordem.push_back(
+            andar
+        );
+
         mostrarMovimento(
             origem,
             andarAtual
         );
     }
+
+    for(int andar : abaixo) {
+
+        int origem = andarAtual;
+
+        if(andar < andarAtual)
+            estado = DESCENDO;
+        else
+            estado = PARADO;
+
+        andarAtual = andar;
+
+        ordem.push_back(
+            andar
+        );
+
+        mostrarMovimento(
+            origem,
+            andarAtual
+        );
+    }
+
+    cout << endl;
+
+    cout << "Movimentos: "
+         << calcularMovimentos(
+                ordem
+            )
+         << endl;
 
     estado = PARADO;
 }
@@ -225,21 +288,19 @@ void Elevador::executarMenorDistancia() {
         "MENOR DISTANCIA"
     );
 
-    // Copia chamadas
     vector<int> restantes = chamadas;
 
-    // Continua ate acabar
+    vector<int> ordem;
+
     while(!restantes.empty()) {
 
         int melhorIndice = 0;
 
-        // Primeira distancia
         int menorDistancia =
             abs(
                 restantes[0] - andarAtual
             );
 
-        // Busca menor distancia
         for(
             int i = 1;
             i < restantes.size();
@@ -248,14 +309,10 @@ void Elevador::executarMenorDistancia() {
 
             int distancia =
                 abs(
-                    restantes[i]
-                    - andarAtual
+                    restantes[i] - andarAtual
                 );
 
-            // Atualiza menor distancia
-            if(
-                distancia < menorDistancia
-            ) {
+            if(distancia < menorDistancia) {
 
                 menorDistancia = distancia;
 
@@ -263,33 +320,110 @@ void Elevador::executarMenorDistancia() {
             }
         }
 
-        // Define proximo andar
         int proximo =
             restantes[melhorIndice];
 
         int origem = andarAtual;
 
-        // Atualiza estado
         if(proximo > andarAtual)
             estado = SUBINDO;
-        else
+        else if(proximo < andarAtual)
             estado = DESCENDO;
+        else
+            estado = PARADO;
 
-        // Atualiza andar
         andarAtual = proximo;
 
-        // Mostra resultado
+        ordem.push_back(
+            proximo
+        );
+
         mostrarMovimento(
             origem,
             andarAtual
         );
 
-        // Remove chamada
         restantes.erase(
             restantes.begin()
             + melhorIndice
         );
     }
 
+    cout << endl;
+
+    cout << "Movimentos: "
+         << calcularMovimentos(
+                ordem
+            )
+         << endl;
+
     estado = PARADO;
+}
+
+// Executa estrategia atual
+void Elevador::executar() {
+
+    if(estrategia == nullptr) {
+
+        cout << "Estrategia nao definida"
+             << endl;
+
+        return;
+    }
+
+    vector<int> ordem =
+        estrategia->organizar(
+            chamadas,
+            andarAtual
+        );
+
+    for(int andar : ordem) {
+
+        int origem = andarAtual;
+
+        if(andar > andarAtual)
+            estado = SUBINDO;
+        else if(andar < andarAtual)
+            estado = DESCENDO;
+        else
+            estado = PARADO;
+
+        andarAtual = andar;
+
+        mostrarMovimento(
+            origem,
+            andarAtual
+        );
+    }
+
+    cout << endl;
+
+    cout << "Movimentos: "
+         << calcularMovimentos(
+                ordem
+            )
+         << endl;
+
+    estado = PARADO;
+}
+
+// Calcula movimentos totais
+int Elevador::calcularMovimentos(
+    vector<int> ordem
+) {
+
+    int atual = 0;
+
+    int total = 0;
+
+    for(int andar : ordem) {
+
+        total += abs(
+            andar - atual
+        );
+
+        atual = andar;
+    }
+
+    return total;
 }

@@ -6,6 +6,7 @@
 
 #include "Pessoa.h"
 #include "Andar.h"
+#include "EstrategiaElevador.h"
 
 using namespace std;
 
@@ -32,28 +33,40 @@ private:
     // Capacidade maxima
     int capacidade;
 
-    // Pessoas dentro
+    // Pessoas embarcadas
     vector<Pessoa> pessoas;
 
     // Lista de chamadas
     vector<int> chamadas;
 
+    // Estrategia atual
+    EstrategiaElevador* estrategia;
+
 public:
 
-    // Construtor
+    // Inicializa elevador
     Elevador(int capacidade);
 
     // Retorna andar atual
     int getAndarAtual();
 
     // Define andar atual
-    void setAndarAtual(int andar);
+    void setAndarAtual(
+        int andar
+    );
+
+    // Define estrategia
+    void setEstrategia(
+        EstrategiaElevador* estrategia
+    );
 
     // Move elevador
     void mover();
 
     // Embarca pessoas
-    void embarcar(Andar &andar);
+    void embarcar(
+        Andar& andar
+    );
 
     // Desembarca pessoas
     void desembarcar();
@@ -62,7 +75,23 @@ public:
     bool vazio();
 
     // Adiciona chamada
-    void adicionarChamada(int andar);
+    void adicionarChamada(
+        int andar
+    );
+
+    // Retorna estado
+    string getEstadoTexto();
+
+    // Mostra cabecalho
+    void mostrarCabecalho(
+        string algoritmo
+    );
+
+    // Mostra movimento
+    void mostrarMovimento(
+        int origem,
+        int destino
+    );
 
     // Executa FIFO
     void executarFIFO();
@@ -73,17 +102,13 @@ public:
     // Executa menor distancia
     void executarMenorDistancia();
 
-    // Mostra cabecalho
-    void mostrarCabecalho(string algoritmo);
+    // Executa estrategia
+    void executar();
 
-    // Mostra movimento
-    void mostrarMovimento(
-        int origem,
-        int destino
+    // Calcula movimentos
+    int calcularMovimentos(
+        vector<int> ordem
     );
-
-    // Retorna estado em texto
-    string getEstadoTexto();
 };
 
 #endif

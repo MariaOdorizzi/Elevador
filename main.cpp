@@ -1,8 +1,42 @@
 #include <iostream>
 #include <vector>
-
+#include <cmath>
 
 using namespace std;
+
+// Calcula quantidade de movimentos
+int calcularMovimentos(
+    vector<int> chamadas
+) {
+
+    int posicao = 0;
+    int movimentos = 0;
+
+    for(int chamada : chamadas) {
+
+        movimentos += abs(
+            chamada - posicao
+        );
+
+        posicao = chamada;
+    }
+
+    return movimentos;
+}
+
+// Imprime percurso
+void imprimirPercurso(
+    vector<int> chamadas
+) {
+
+    cout << "0";
+
+    for(int chamada : chamadas) {
+
+        cout << " -> "
+             << chamada;
+    }
+}
 
 // Imprime lista
 void imprimirLista(
@@ -40,7 +74,15 @@ void mostrarComparacao(
 
     int posFIFO,
     int posSCAN,
-    int posMenor
+    int posMenor,
+
+    string estadoFIFO,
+    string estadoSCAN,
+    string estadoMenor,
+
+    int movFIFO,
+    int movSCAN,
+    int movMenor
 ) {
 
     cout << endl;
@@ -59,12 +101,20 @@ void mostrarComparacao(
     cout << endl;
 
     // Estados
-    cout << "Estado: SUBINDO         ";
-    cout << "Estado: SUBINDO         ";
-    cout << "Estado: SUBINDO         ";
-    cout << endl;
+    cout << "Estado: "
+         << estadoFIFO;
 
-    cout << endl;
+    cout << "         ";
+
+    cout << "Estado: "
+         << estadoSCAN;
+
+    cout << "         ";
+
+    cout << "Estado: "
+         << estadoMenor;
+
+    cout << endl << endl;
 
     // Chamadas
     cout << "Chamadas:               ";
@@ -84,6 +134,38 @@ void mostrarComparacao(
 
     cout << endl << endl;
 
+    // Movimentos
+    cout << "Movimentos: "
+         << movFIFO;
+
+    cout << "      ";
+
+    cout << "Movimentos: "
+         << movSCAN;
+
+    cout << "      ";
+
+    cout << "Movimentos: "
+         << movMenor;
+
+    cout << endl << endl;
+
+    // Percursos
+    cout << "FIFO: ";
+    imprimirPercurso(fifo);
+
+    cout << endl;
+
+    cout << "SCAN: ";
+    imprimirPercurso(scan);
+
+    cout << endl;
+
+    cout << "MENOR: ";
+    imprimirPercurso(menor);
+
+    cout << endl << endl;
+
     // Desenha predio
     for(int andar = 8; andar >= 0; andar--) {
 
@@ -92,16 +174,14 @@ void mostrarComparacao(
             posFIFO
         );
 
-        cout << "      ";
-        cout << "      ";
+        cout << "            ";
 
         imprimirLinha(
             andar,
             posSCAN
         );
 
-        cout << "      ";
-        cout << "      ";
+        cout << "            ";
 
         imprimirLinha(
             andar,
@@ -118,20 +198,39 @@ void mostrarComparacao(
 int main() {
 
     // FIFO
-    vector<int> fifo = {4, 1, 6, 2, 8};
+    vector<int> fifo = {
+        4, 1, 6, 2, 8
+    };
 
     // SCAN
-    vector<int> scan = {1, 2, 4, 6, 8};
+    vector<int> scan = {
+        1, 2, 4, 6, 8
+    };
 
-    // MENOR DISTANCIA
-    vector<int> menor = {1, 2, 4, 6, 8};
+    // Menor Distancia
+    vector<int> menor = {
+        1, 2, 4, 6, 8
+    };
 
-    // Posicoes atuais
-    int posFIFO = 6;
+    // Posicoes finais
+    int posFIFO = fifo.back();
+    int posSCAN = scan.back();
+    int posMenor = menor.back();
 
-    int posSCAN = 2;
+    // Estados
+    string estadoFIFO = "PARADO";
+    string estadoSCAN = "PARADO";
+    string estadoMenor = "PARADO";
 
-    int posMenor = 8;
+    // Movimentos calculados
+    int movFIFO =
+        calcularMovimentos(fifo);
+
+    int movSCAN =
+        calcularMovimentos(scan);
+
+    int movMenor =
+        calcularMovimentos(menor);
 
     // Exibe comparacao
     mostrarComparacao(
@@ -142,7 +241,15 @@ int main() {
 
         posFIFO,
         posSCAN,
-        posMenor
+        posMenor,
+
+        estadoFIFO,
+        estadoSCAN,
+        estadoMenor,
+
+        movFIFO,
+        movSCAN,
+        movMenor
     );
 
     return 0;
