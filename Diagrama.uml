@@ -13,20 +13,55 @@ class Pessoa {
 
 class Andar {
     - numero : int
+    - fila : queue<Pessoa>
 
     + Andar(num : int)
     + getNumero() : int
+    + adicionarPessoa(p : Pessoa) : void
+    + removerPessoa() : Pessoa
+    + vazio() : bool
 }
 
 class Elevador {
     - andarAtual : int
-    - fila : queue<int>
+    - capacidade : int
+    - pessoas : vector<Pessoa>
+    - chamadas : vector<int>
+    - estado : EstadoElevador
+    - estrategia : EstrategiaElevador*
 
-    + Elevador()
-    + chamar(andar : int) : void
-    + processar() : void
-    + mostrarFila() : void
+    + Elevador(capacidade : int)
     + getAndarAtual() : int
+    + setAndarAtual(andar : int) : void
+    + setEstrategia(estrategia : EstrategiaElevador*) : void
+    + chamar(andar : int) : void
+    + mover() : void
+    + embarcar(andar : Andar) : void
+    + desembarcar() : void
+    + executar() : void
+    + mostrarFila() : void
+}
+
+enum EstadoElevador {
+    PARADO
+    SUBINDO
+    DESCENDO
+}
+
+interface EstrategiaElevador {
+    + executar(elevador : Elevador) : void
+}
+
+class FIFO {
+    + executar(elevador : Elevador) : void
+}
+
+class SCAN {
+    + executar(elevador : Elevador) : void
+}
+
+class MenorDistancia {
+    + executar(elevador : Elevador) : void
 }
 
 class Predio {
@@ -42,8 +77,17 @@ class Predio {
 }
 
 Predio "1" *-- "1" Elevador
-Predio "1" *-- "0..7" Andar
-Predio "1" *-- "many" Pessoa
-Elevador "1" -- "many" Pessoa : atende >
+Predio "1" *-- "0..*" Andar
+Predio "1" *-- "0..*" Pessoa
+
+Andar "1" o-- "0..*" Pessoa
+Elevador "1" o-- "0..*" Pessoa
+
+Elevador "1" --> "1" EstrategiaElevador
+EstrategiaElevador <|.. FIFO
+EstrategiaElevador <|.. SCAN
+EstrategiaElevador <|.. MenorDistancia
+
+Elevador --> EstadoElevador
 
 @enduml
