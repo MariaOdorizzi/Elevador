@@ -3,8 +3,22 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <thread>
+#include <chrono>
+#include <cstdlib>
 
 using namespace std;
+
+
+// Limpa a tela do terminal
+void limparTelaElevador() {
+
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
 
 // Inicializa elevador
 Elevador::Elevador(int capacidade) {
@@ -42,6 +56,38 @@ void Elevador::setEstrategia(
 void Elevador::mover() {
 
     andarAtual++;
+}
+
+// Move ate um andar especifico, animando a movimentacao
+void Elevador::moverPara(
+    int destino
+) {
+
+    int origem = andarAtual;
+
+    while(andarAtual != destino) {
+
+        if(andarAtual < destino) {
+            estado = SUBINDO;
+            andarAtual++;
+        } else {
+            estado = DESCENDO;
+            andarAtual--;
+        }
+
+        limparTelaElevador();
+
+        mostrarMovimento(
+            origem,
+            andarAtual
+        );
+
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(400)
+        );
+    }
+
+    estado = PARADO;
 }
 
 // Embarca pessoas

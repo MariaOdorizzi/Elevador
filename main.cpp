@@ -6,6 +6,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <ctime>
+#include <thread>
+#include <chrono>
 
 #include "Classes/Fifo.h"
 #include "Classes/Scan.h"
@@ -13,9 +15,117 @@
 
 using namespace std;
 
-const int ANDAR_INICIAL = 0;
 const int TOTAL_ANDARES = 9;
 const string NOME_ARQUIVO = "historico_simulacoes.csv";
+
+// Limpa a tela do terminal
+void limparTela() {
+
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+
+// Mostra o elevador em uma posicao especifica
+void mostrarElevadorAnimado(
+    string estrategia,
+    int andarAtual,
+    int origem,
+    int destino,
+    int movimentos
+) {
+
+    cout << "==============================" << endl;
+    cout << "ESTRATEGIA: " << estrategia << endl;
+    cout << "==============================" << endl;
+
+    cout << "Origem: " << origem << endl;
+    cout << "Destino: " << destino << endl;
+    cout << "Andar atual: " << andarAtual << endl;
+
+    if(andarAtual < destino)
+        cout << "Estado: SUBINDO" << endl;
+    else if(andarAtual > destino)
+        cout << "Estado: DESCENDO" << endl;
+    else
+        cout << "Estado: PARADO" << endl;
+
+    cout << "Movimentos realizados: " << movimentos << endl;
+    cout << endl;
+
+    for(int andar = TOTAL_ANDARES - 1; andar >= 0; andar--) {
+
+        if(andar == andarAtual) {
+            cout << "[" << andar << "] | E |" << endl;
+        } else {
+            cout << "[" << andar << "] |   |" << endl;
+        }
+    }
+}
+
+// Anima o elevador andando de andar em andar
+void animarEstrategia(
+    string estrategia,
+    vector<int> ordem,
+    int andarInicial
+) {
+
+    int andarAtual = andarInicial;
+    int movimentos = 0;
+
+    for(int destino : ordem) {
+
+        int origem = andarAtual;
+
+        limparTela();
+        mostrarElevadorAnimado(
+            estrategia,
+            andarAtual,
+            origem,
+            destino,
+            movimentos
+        );
+
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(500)
+        );
+
+        while(andarAtual != destino) {
+
+            if(andarAtual < destino)
+                andarAtual++;
+            else
+                andarAtual--;
+
+            movimentos++;
+
+            limparTela();
+            mostrarElevadorAnimado(
+                estrategia,
+                andarAtual,
+                origem,
+                destino,
+                movimentos
+            );
+
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(500)
+            );
+        }
+    }
+
+    cout << endl;
+    cout << "Fim da estrategia " << estrategia << endl;
+    cout << "Total de movimentos: " << movimentos << endl;
+    cout << endl;
+
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(1000)
+    );
+}
+
 
 // Gera uma unica sequencia aleatoria de chamadas
 vector<int> gerarChamadasAleatorias(
@@ -35,10 +145,10 @@ vector<int> gerarChamadasAleatorias(
     return chamadas;
 }
 
-// Calcula quantidade de movimentos iniciando sempre do andar 0
+// Calcula quantidade de movimentos a partir do andar inicial informado
 int calcularMovimentos(
     vector<int> chamadas,
-    int andarInicial = ANDAR_INICIAL
+    int andarInicial
 ) {
 
     int posicao = andarInicial;
@@ -172,10 +282,11 @@ void imprimirLista(
 
 // Imprime percurso completo
 void imprimirPercurso(
-    vector<int> chamadas
+    vector<int> chamadas,
+    int andarInicial
 ) {
 
-    cout << ANDAR_INICIAL;
+    cout << andarInicial;
 
     for(int chamada : chamadas) {
         cout << " -> " << chamada;
@@ -195,9 +306,228 @@ void imprimirLinha(
     }
 }
 
+
+// Estrutura usada para controlar cada elevador na animacao simultanea
+struct AnimacaoElevador {
+    string nome;
+    vector<int> ordem;
+    int andarAtual;
+    int indiceDestino;
+    int movimentos;
+    bool finalizado;
+};
+
+// Retorna o destino atual da estrategia
+int obterDestinoAtual(
+    AnimacaoElevador elevador
+) {
+
+    if(elevador.finalizado || elevador.indiceDestino >= elevador.ordem.size())
+        return elevador.andarAtual;
+
+    return elevador.ordem[elevador.indiceDestino];
+}
+
+// Retorna o estado atual da animacao
+string obterEstadoAnimacao(
+    AnimacaoElevador elevador
+) {
+
+    if(elevador.finalizado)
+        return "PARADO";
+
+    int destino = obterDestinoAtual(elevador);
+
+    if(elevador.andarAtual < destino)
+        return "SUBINDO";
+
+    if(elevador.andarAtual > destino)
+        return "DESCENDO";
+
+    return "PARADO";
+}
+
+// Avanca um andar em uma estrategia
+void avancarElevador(
+    AnimacaoElevador &elevador
+) {
+
+    if(elevador.finalizado)
+        return;
+
+    if(elevador.indiceDestino >= elevador.ordem.size()) {
+        elevador.finalizado = true;
+        return;
+    }
+
+    int destino = elevador.ordem[elevador.indiceDestino];
+
+    if(elevador.andarAtual < destino) {
+        elevador.andarAtual++;
+        elevador.movimentos++;
+    } else if(elevador.andarAtual > destino) {
+        elevador.andarAtual--;
+        elevador.movimentos++;
+    }
+
+    // Se chegou no destino, passa para a proxima chamada
+    if(elevador.andarAtual == destino) {
+        elevador.indiceDestino++;
+
+        if(elevador.indiceDestino >= elevador.ordem.size())
+            elevador.finalizado = true;
+    }
+}
+
+// Imprime uma linha da animacao simultanea
+void imprimirLinhaAnimacao(
+    int andar,
+    AnimacaoElevador fifo,
+    AnimacaoElevador scan,
+    AnimacaoElevador menor
+) {
+
+    imprimirLinha(andar, fifo.andarAtual);
+    cout << "            ";
+
+    imprimirLinha(andar, scan.andarAtual);
+    cout << "            ";
+
+    imprimirLinha(andar, menor.andarAtual);
+    cout << endl;
+}
+
+// Mostra os tres elevadores andando ao mesmo tempo
+void mostrarAnimacaoSimultanea(
+    vector<int> chamadas,
+    AnimacaoElevador fifo,
+    AnimacaoElevador scan,
+    AnimacaoElevador menor
+) {
+
+    cout << "ANIMACAO SIMULTANEA DAS ESTRATEGIAS" << endl;
+    cout << "Chamadas: ";
+    imprimirLista(chamadas);
+    cout << endl << endl;
+
+    cout << "FIFO                    "
+         << "SCAN                    "
+         << "MENOR DISTANCIA"
+         << endl;
+
+    cout << "---------------------------------------------------------------------------" << endl;
+
+    cout << "Destino: " << obterDestinoAtual(fifo);
+    cout << "             ";
+    cout << "Destino: " << obterDestinoAtual(scan);
+    cout << "             ";
+    cout << "Destino: " << obterDestinoAtual(menor);
+    cout << endl;
+
+    cout << "Estado: " << obterEstadoAnimacao(fifo);
+    cout << "          ";
+    cout << "Estado: " << obterEstadoAnimacao(scan);
+    cout << "          ";
+    cout << "Estado: " << obterEstadoAnimacao(menor);
+    cout << endl;
+
+    cout << "Movimentos: " << fifo.movimentos;
+    cout << "       ";
+    cout << "Movimentos: " << scan.movimentos;
+    cout << "       ";
+    cout << "Movimentos: " << menor.movimentos;
+    cout << endl << endl;
+
+    for(int andar = TOTAL_ANDARES - 1; andar >= 0; andar--) {
+        imprimirLinhaAnimacao(
+            andar,
+            fifo,
+            scan,
+            menor
+        );
+    }
+
+    cout << "---------------------------------------------------------------------------" << endl;
+}
+
+// Anima FIFO, SCAN e Menor Distancia lado a lado, ao mesmo tempo
+void animarTresEstrategias(
+    vector<int> chamadas,
+    vector<int> ordemFIFO,
+    vector<int> ordemSCAN,
+    vector<int> ordemMenor,
+    int andarInicial
+) {
+
+    AnimacaoElevador fifo = {
+        "FIFO",
+        ordemFIFO,
+        andarInicial,
+        0,
+        0,
+        ordemFIFO.empty()
+    };
+
+    AnimacaoElevador scan = {
+        "SCAN",
+        ordemSCAN,
+        andarInicial,
+        0,
+        0,
+        ordemSCAN.empty()
+    };
+
+    AnimacaoElevador menor = {
+        "MENOR DISTANCIA",
+        ordemMenor,
+        andarInicial,
+        0,
+        0,
+        ordemMenor.empty()
+    };
+
+    while(
+        !fifo.finalizado
+        || !scan.finalizado
+        || !menor.finalizado
+    ) {
+
+        limparTela();
+
+        mostrarAnimacaoSimultanea(
+            chamadas,
+            fifo,
+            scan,
+            menor
+        );
+
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(450)
+        );
+
+        avancarElevador(fifo);
+        avancarElevador(scan);
+        avancarElevador(menor);
+    }
+
+    limparTela();
+
+    mostrarAnimacaoSimultanea(
+        chamadas,
+        fifo,
+        scan,
+        menor
+    );
+
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(1200)
+    );
+}
+
 // Retorna estado final da estrategia
 string obterEstadoFinal(
-    vector<int> ordem
+    vector<int> ordem,
+    int andarInicial
 ) {
 
     if(ordem.empty())
@@ -205,10 +535,10 @@ string obterEstadoFinal(
 
     int ultimo = ordem.back();
 
-    if(ultimo > ANDAR_INICIAL)
+    if(ultimo > andarInicial)
         return "SUBINDO";
 
-    if(ultimo < ANDAR_INICIAL)
+    if(ultimo < andarInicial)
         return "DESCENDO";
 
     return "PARADO";
@@ -224,15 +554,19 @@ void mostrarComparacao(
 
     int movFIFO,
     int movSCAN,
-    int movMenor
+    int movMenor,
+
+    int andarInicial
 ) {
 
-    int posFIFO = fifo.empty() ? ANDAR_INICIAL : fifo.back();
-    int posSCAN = scan.empty() ? ANDAR_INICIAL : scan.back();
-    int posMenor = menor.empty() ? ANDAR_INICIAL : menor.back();
+    int posFIFO = fifo.empty() ? andarInicial : fifo.back();
+    int posSCAN = scan.empty() ? andarInicial : scan.back();
+    int posMenor = menor.empty() ? andarInicial : menor.back();
 
     cout << endl;
     cout << "COMPARACAO DAS ESTRATEGIAS" << endl;
+
+    cout << "Andar inicial: " << andarInicial << endl;
 
     cout << "Chamadas geradas aleatoriamente: ";
     imprimirLista(entrada);
@@ -245,11 +579,11 @@ void mostrarComparacao(
 
     cout << "---------------------------------------------------------------------------" << endl;
 
-    cout << "Estado: " << obterEstadoFinal(fifo);
+    cout << "Estado: " << obterEstadoFinal(fifo, andarInicial);
     cout << "         ";
-    cout << "Estado: " << obterEstadoFinal(scan);
+    cout << "Estado: " << obterEstadoFinal(scan, andarInicial);
     cout << "         ";
-    cout << "Estado: " << obterEstadoFinal(menor);
+    cout << "Estado: " << obterEstadoFinal(menor, andarInicial);
     cout << endl << endl;
 
     cout << "Ordem:                  ";
@@ -271,15 +605,15 @@ void mostrarComparacao(
     cout << endl << endl;
 
     cout << "FIFO: ";
-    imprimirPercurso(fifo);
+    imprimirPercurso(fifo, andarInicial);
     cout << endl;
 
     cout << "SCAN: ";
-    imprimirPercurso(scan);
+    imprimirPercurso(scan, andarInicial);
     cout << endl;
 
     cout << "MENOR: ";
-    imprimirPercurso(menor);
+    imprimirPercurso(menor, andarInicial);
     cout << endl << endl;
 
     for(int andar = TOTAL_ANDARES - 1; andar >= 0; andar--) {
@@ -300,6 +634,15 @@ int main() {
     srand(time(NULL));
 
     int quantidadeChamadas;
+    int andarInicial;
+
+    cout << "Andar inicial do elevador (0 a " << TOTAL_ANDARES - 1 << "): ";
+    cin >> andarInicial;
+
+    if(andarInicial < 0 || andarInicial >= TOTAL_ANDARES) {
+        cout << "Andar inicial invalido." << endl;
+        return 0;
+    }
 
     cout << "Quantidade de chamadas aleatorias: ";
     cin >> quantidadeChamadas;
@@ -322,32 +665,32 @@ int main() {
 
     vector<int> fifo = estrategiaFIFO.organizar(
         chamadas,
-        ANDAR_INICIAL
+        andarInicial
     );
 
     vector<int> scan = estrategiaSCAN.organizar(
         chamadas,
-        ANDAR_INICIAL
+        andarInicial
     );
 
     vector<int> menor = estrategiaMenor.organizar(
         chamadas,
-        ANDAR_INICIAL
+        andarInicial
     );
 
     int movFIFO = calcularMovimentos(
         fifo,
-        ANDAR_INICIAL
+        andarInicial
     );
 
     int movSCAN = calcularMovimentos(
         scan,
-        ANDAR_INICIAL
+        andarInicial
     );
 
     int movMenor = calcularMovimentos(
         menor,
-        ANDAR_INICIAL
+        andarInicial
     );
 
     criarCabecalhoCSV();
@@ -360,7 +703,7 @@ int main() {
         chamadas,
         fifo,
         movFIFO,
-        ANDAR_INICIAL
+        andarInicial
     );
 
     salvarCSV(
@@ -369,7 +712,7 @@ int main() {
         chamadas,
         scan,
         movSCAN,
-        ANDAR_INICIAL
+        andarInicial
     );
 
     salvarCSV(
@@ -378,8 +721,19 @@ int main() {
         chamadas,
         menor,
         movMenor,
-        ANDAR_INICIAL
+        andarInicial
     );
+
+    // Mostra as tres estrategias se movimentando ao mesmo tempo
+    animarTresEstrategias(
+        chamadas,
+        fifo,
+        scan,
+        menor,
+        andarInicial
+    );
+
+    limparTela();
 
     mostrarComparacao(
         chamadas,
@@ -388,7 +742,8 @@ int main() {
         menor,
         movFIFO,
         movSCAN,
-        movMenor
+        movMenor,
+        andarInicial
     );
 
     cout << endl;

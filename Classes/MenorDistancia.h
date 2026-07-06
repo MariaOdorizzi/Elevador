@@ -1,6 +1,7 @@
 #ifndef MENOR_DISTANCIA_H
 #define MENOR_DISTANCIA_H
 
+#include <vector>
 #include <cmath>
 
 #include "EstrategiaElevador.h"
@@ -8,8 +9,7 @@
 using namespace std;
 
 // Estrategia menor distancia
-class MenorDistancia :
-    public EstrategiaElevador {
+class MenorDistancia : public EstrategiaElevador {
 
 public:
 
@@ -20,47 +20,27 @@ public:
 
         vector<int> resultado;
 
-        while(!chamadas.empty()) {
+        while (!chamadas.empty()) {
 
-            int melhorIndice = 0;
+            size_t melhorIndice = 0;
 
-            int menor =
-                abs(
-                    chamadas[0]
-                    - andarAtual
-                );
+            int menor = abs(chamadas[0] - andarAtual);
 
-            for(
-                int i = 1;
-                i < chamadas.size();
-                i++
-            ) {
+            for (size_t i = 1; i < chamadas.size(); i++) {
 
-                int distancia =
-                    abs(
-                        chamadas[i]
-                        - andarAtual
-                    );
+                int distancia = abs(chamadas[i] - andarAtual);
 
-                if(distancia < menor) {
-
+                if (distancia < menor) {
                     menor = distancia;
-
                     melhorIndice = i;
                 }
             }
 
-            andarAtual =
-                chamadas[melhorIndice];
+            resultado.push_back(chamadas[melhorIndice]);
 
-            resultado.push_back(
-                chamadas[melhorIndice]
-            );
+            andarAtual = chamadas[melhorIndice];
 
-            chamadas.erase(
-                chamadas.begin()
-                + melhorIndice
-            );
+            chamadas.erase(chamadas.begin() + melhorIndice);
         }
 
         return resultado;

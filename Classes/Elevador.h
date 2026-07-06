@@ -63,6 +63,11 @@ public:
     // Move elevador
     void mover();
 
+    // Move ate um andar especifico, animando a movimentacao
+    void moverPara(
+        int destino
+    );
+
     // Embarca pessoas
     void embarcar(
         Andar& andar
