@@ -298,7 +298,7 @@ Durante o desenvolvimento deste projeto foram aplicados conhecimentos relacionad
 
 # Vídeo
 Vídeo editado no canvas pela estudante e publicado no YouTube
-link: 
+link: https://youtu.be/6GjxBrIoFr4
 
 # Desenvolvido por
 
